@@ -28,6 +28,8 @@ from PyQt5.QtCore import Qt
 # Finish the layout of the game UI
 # Continue working on start new quiz dialog
 
+# Load XML into Quiz
+
 # Add a way to restart the game with your current settings
 
 # Record questions the user got wrong to help them study?
@@ -199,6 +201,10 @@ class LatinMainWindow(QMainWindow):
 
         options = self.start_quiz_options()
 
+        if options == None:
+
+            pass
+
         # Opens a window to adjust game settings
 
     def start_quiz_options(self):
@@ -209,9 +215,17 @@ class LatinMainWindow(QMainWindow):
         # Qt.WindowCloseButtonHint Prevents the ? button from appearing
         # in the dialog window
 
+        ### Difficulty Selection ###
+
         start_quiz_layout = QVBoxLayout()
 
-        set_difficulty_container = QGroupBox()
+        set_difficulty_container = QGroupBox('Question Difficulty')
+        set_difficulty_container.setToolTip('Choose how many words will be in the question pool.\n' +
+                                            'Easy: 50 Most common words used.\n' +
+                                            'Normal: 100 Most common words used.\n' +
+                                            'Hard: 250 Most common words used.\n' +
+                                            'Very Hard: 500 Most common words used.\n' +
+                                            'Everything: ALL 1000 words used')
 
         set_difficulty_layout = QHBoxLayout()
 
@@ -232,6 +246,9 @@ class LatinMainWindow(QMainWindow):
 
         for button in self.difficulty_buttons:
 
+            # This loop adds all the buttons to the set_difficulty_group,
+            # Gives them an ID number, and adds them to the GroupBox's layout
+
             set_difficulty_group.addButton(button)
             set_difficulty_group.setId(button, id_num)
 
@@ -239,10 +256,39 @@ class LatinMainWindow(QMainWindow):
 
             set_difficulty_layout.addWidget(button)
 
+        self.difficulty_buttons[0].setChecked(True)
+        # Makes Easy Mode selected by default
+
         set_difficulty_container.setLayout(set_difficulty_layout)
 
-
         start_quiz_layout.addWidget(set_difficulty_container)
+
+        ### Number of Questions ###
+
+        # TODO: Finish the Number of Questions section
+        # Should let you pick between standard 25 Question Quiz
+        # Or 1 Question for each possible Word (AKA Easy mode will have 50 Questions
+
+        ### Start and Cancel Buttons ###
+
+        button_layout = QHBoxLayout()
+
+        start_button = QPushButton('Start')
+        start_button.clicked.connect(start_quiz_window.accept)
+        # When clicked, returns a 1
+
+        cancel_button = QPushButton('Cancel')
+        cancel_button.clicked.connect(start_quiz_window.reject)
+        # When clicked returns a 0
+
+        button_layout.addStretch(1)
+
+        button_layout.addWidget(start_button)
+        button_layout.addWidget(cancel_button)
+
+        start_quiz_layout.addLayout(button_layout)
+
+        ### Misc Window Settings
 
         start_quiz_window.setGeometry(300, 300, 200, 300)
 
@@ -250,7 +296,18 @@ class LatinMainWindow(QMainWindow):
 
         start_quiz_window.setLayout(start_quiz_layout)
 
-        start_quiz_window.exec_()
+        choice = start_quiz_window.exec_()
+        # Returns a number corresponding to the user's choice.
+        # 1 = Accept (Hit the ok button)
+        # 0 = Reject (Hit the cancel button)
+
+        if choice == 1:
+
+            return None # Will Return a Tuple with the player's options.
+
+        else:
+
+            return None
 
     def about(self):
         
