@@ -11,9 +11,7 @@ LatinQuiz.py - Game to help learn latin vocabulary.
 
 """
 
-import sys, random, os.path
-
-import xml.etree.ElementTree as ET
+import sys, random, os.path, csv
 
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QHBoxLayout,
                              QVBoxLayout, QPushButton, QAction, QDialog,
@@ -26,9 +24,6 @@ from PyQt5.QtCore import Qt
 # TODO:
 
 # Finish the layout of the game UI
-# Continue working on start new quiz dialog
-
-# Load XML into Quiz
 
 # Add a way to restart the game with your current settings
 
@@ -134,12 +129,63 @@ class LatinQuiz(QWidget):
 
         pass
 
+    def start_quiz(self, options):
+
+        frequency, questions = options
+
+        # Loads the options
+
+        #TODO:
+
+        # Finish this section
+
+        if os.path.exists('latin_vocabulary_list.csv'):
+
+            with open('latin_vocabulary_list.csv', encoding='utf-8',
+                      newline='') as to_load:
+
+                latin_csv = csv.reader(to_load)
+
+                all_words = [row for row in latin_csv]
+
+            possible_words = tuple([(word[0], word[1]) for word in all_words[1:]
+                                    if int(word[4]) < frequency])
+
+            # Builds a tuple that contains tuples for word + definition pairs, based
+            # on the difficulty option (aka the word frequency) when the user is starting
+            # their quiz.
+
+            # word[0] is the actual word
+            # word[1] is the definition
+            # word[4] is the frequency rank. It is stored as a str,
+            # so it is converted to int
+
+            self.a_button.setEnabled(True)
+            self.b_button.setEnabled(True)
+            self.c_button.setEnabled(True)
+            self.d_button.setEnabled(True)
+
+            # Enables the quiz buttons
+
+            # TODO:
+            # Finish making the questions work.
+
+        else:
+
+            pass
+            #TODO:
+
+            # Put an error message if file not found
+    
         
 class LatinMainWindow(QMainWindow):
 
     def __init__(self):
 
         super().__init__()
+
+        self.Quiz = LatinQuiz()
+        # Creates an instance of LatinQuiz()
 
         self.initUI()
 
@@ -182,10 +228,7 @@ class LatinMainWindow(QMainWindow):
          
         ### Misc Window Settings ###
 
-        Quiz = LatinQuiz()
-        # Creates an instance of LatinQuiz()
-
-        self.setCentralWidget(Quiz)
+        self.setCentralWidget(self.Quiz)
         # Makes LatinQuiz() the widget that the main window uses
 
         self.previous_settings = []
@@ -201,19 +244,38 @@ class LatinMainWindow(QMainWindow):
 
         options = self.start_quiz_options()
 
-        if options == None:
-
-            pass
-
         # Opens a window to adjust game settings
+
+        if options != None:
+
+            self.Quiz.start_quiz(options)
 
     def start_quiz_options(self):
 
         # Builds the window that displays when a new quiz begins
 
+        ### Initial Setup ###
+
         start_quiz_window = QDialog(None, Qt.WindowCloseButtonHint)
         # Qt.WindowCloseButtonHint Prevents the ? button from appearing
         # in the dialog window
+
+        options_layout = QHBoxLayout()
+        # Holds the radio button options for starting a game.
+
+        difficulty = { 0: 50,
+                       1: 100,
+                       2: 250,
+                       3: 500,
+                       4: 1000 }
+
+        questions = { 0: 25,
+                      1: 50,
+                      2: -1}
+
+        # These dicts hold the what each option below corresponds to
+        # The difficulty is how many words will be chosen for questions
+        # the questions will be how many questions the quiz contains
 
         ### Difficulty Selection ###
 
@@ -227,7 +289,9 @@ class LatinMainWindow(QMainWindow):
                                             'Very Hard: 500 Most common words used.\n' +
                                             'Everything: ALL 1000 words used')
 
-        set_difficulty_layout = QHBoxLayout()
+        start_quiz_layout.addLayout(options_layout)
+
+        set_difficulty_layout = QVBoxLayout()
 
         set_difficulty_group = QButtonGroup()
         # Groups the difficulty Radio Buttons together
@@ -261,13 +325,38 @@ class LatinMainWindow(QMainWindow):
 
         set_difficulty_container.setLayout(set_difficulty_layout)
 
-        start_quiz_layout.addWidget(set_difficulty_container)
+        options_layout.addWidget(set_difficulty_container)
 
         ### Number of Questions ###
 
-        # TODO: Finish the Number of Questions section
-        # Should let you pick between standard 25 Question Quiz
-        # Or 1 Question for each possible Word (AKA Easy mode will have 50 Questions
+        no_of_q_layout = QVBoxLayout()
+
+        no_of_q_container = QGroupBox('Number of Questions')
+        no_of_q_container.setToolTip('Choose the number of questions. If "All" is chosen,\n' +
+                                     'each word will have a question!\n' +
+                                     'CAUTION: This can make for a long quiz!')
+                                     
+
+        no_of_q_group = QButtonGroup()
+
+        self.no_of_q_buttons = (QRadioButton('25'), QRadioButton('50'), QRadioButton('All'))
+
+        id_num = 0
+
+        for button in self.no_of_q_buttons:
+
+            no_of_q_group.addButton(button)
+            no_of_q_group.setId(button, id_num)
+
+            id_num += 1
+
+            no_of_q_layout.addWidget(button)
+
+        self.no_of_q_buttons[0].setChecked(True)
+
+        no_of_q_container.setLayout(no_of_q_layout)
+
+        options_layout.addWidget(no_of_q_container)
 
         ### Start and Cancel Buttons ###
 
@@ -288,9 +377,9 @@ class LatinMainWindow(QMainWindow):
 
         start_quiz_layout.addLayout(button_layout)
 
-        ### Misc Window Settings
+        ### Misc Window Settings ###
 
-        start_quiz_window.setGeometry(300, 300, 200, 300)
+        start_quiz_window.setGeometry(300, 300, 150, 150)
 
         start_quiz_window.setWindowTitle('Start New Quiz')
 
@@ -303,22 +392,27 @@ class LatinMainWindow(QMainWindow):
 
         if choice == 1:
 
-            return None # Will Return a Tuple with the player's options.
+            return (difficulty[set_difficulty_group.checkedId()],
+                    questions[no_of_q_group.checkedId()])
 
         else:
 
-            return None
+            return
 
     def about(self):
+
+        # TODO:
         
         # Credits Dickinson College for their amazing
-        # xml document that this is built on.
+        # .csv file that this is built on.
 
         # plus a little credit screen for me.
 
         pass
 
     def how_to_play(self):
+
+        #TODO:
 
         # Tells the user how to set the quiz up, the rules,
         # and what exactly this will do.
