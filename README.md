@@ -5,7 +5,7 @@ Game to help learn latin vocabulary
 
 Notes for myself, this will be removed once this is finished.
 
--Loads in the XML file from http://dcc.dickinson.edu/latin-vocabulary-list
+-Loads in the csv file from http://dcc.dickinson.edu/latin-vocabulary-list
 
 -Parses list and pulls in words + definitions.
 
