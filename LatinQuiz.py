@@ -127,17 +127,45 @@ class LatinQuiz(QWidget):
         # correct answer turns green. Something alerts the user if they were
         # correct or not
 
+        #TODO:
+
+        # Make this work
+
         pass
 
     def start_quiz(self, options):
 
-        frequency, questions = options
+        # Runs the functions related to starting the quiz,
+        # This includes import_words and build_questions
 
-        # Loads the options
+        frequency, q_number = options
+
+        # Loads the options into two variables that are used by
+        # each of the functions below.
 
         #TODO:
 
-        # Finish this section
+        # Create another function that uses the questions
+        # to make the quiz functional.
+
+        possible_words = self.import_words(frequency)
+        # returns a list of words used for the quiz
+
+        questions = self.build_questions(possible_words, q_number)
+        # retuns a list containing tuples with the questions
+        # and their possible answers.
+
+        # Tuples in questions are structured as:
+
+        # ((word, definition), (answer1, answer2, answer3, answer4))
+        # one of the possible answers == definitiom
+
+        self.quiz(questions)
+
+    def import_words(self, frequency):
+
+        # Imports the csv file holding the words and returns a list
+        # containing the words the quiz uses.
 
         if os.path.exists('latin_vocabulary_list.csv'):
 
@@ -148,10 +176,10 @@ class LatinQuiz(QWidget):
 
                 all_words = [row for row in latin_csv]
 
-            possible_words = tuple([(word[0], word[1]) for word in all_words[1:]
-                                    if int(word[4]) < frequency])
+            possible_words = [(word[0], word[1]) for word in all_words[1:]
+                                    if int(word[4]) <= frequency]
 
-            # Builds a tuple that contains tuples for word + definition pairs, based
+            # Builds a list that contains tuples for word + definition pairs, based
             # on the difficulty option (aka the word frequency) when the user is starting
             # their quiz.
 
@@ -160,15 +188,7 @@ class LatinQuiz(QWidget):
             # word[4] is the frequency rank. It is stored as a str,
             # so it is converted to int
 
-            self.a_button.setEnabled(True)
-            self.b_button.setEnabled(True)
-            self.c_button.setEnabled(True)
-            self.d_button.setEnabled(True)
-
-            # Enables the quiz buttons
-
-            # TODO:
-            # Finish making the questions work.
+            return possible_words
 
         else:
 
@@ -176,8 +196,79 @@ class LatinQuiz(QWidget):
             #TODO:
 
             # Put an error message if file not found
-    
-        
+
+    def build_questions(self, possible_words, q_number):
+
+        # Creates and returns a list containing tuples of a word, its correct
+        # answer and three random incorrect answers.
+
+        questions = []
+
+        random.shuffle(possible_words)
+        # randomizes the list of words so the order changes each time the
+        # game is played.
+
+        for word_and_def in possible_words:
+
+            chosen_words = random.sample(possible_words, 3)
+            # Chooses 3 words to use as wrong answers.
+
+            while word_and_def in chosen_words:
+
+                chosen_words = random.sample(possible_words, 3)
+                # If random.sample happens to select the current word,
+                # the wrong answers are redrawn.
+
+            chosen_words.append(word_and_def)
+            # Adds the current word in the for loop to the chosen_words list
+
+            random.shuffle(chosen_words)
+
+            question_answers = []
+
+            for word_pair in chosen_words:
+
+                question_answers.append(word_pair[1])
+                # Appends just the word definitions to the questions_answered
+                # list. These will appear as the possible question choices
+
+            questions.append((word_and_def, tuple(question_answers)))
+            # Appends the word and it's definition, followed by
+            # The list of possible answers converted to a tuple.
+
+            if len(questions) == q_number:
+
+                # Breaks this for loop when it either hits the q_number,
+                # or reaches the end of the possible_words list
+
+                break
+
+        return questions
+
+    def quiz(self, questions):
+
+        # Runs the quiz
+
+        # TODO:
+
+        # Make this work
+
+        # How it should work:
+
+        # Counter keeps track of what quesion is loaded.
+        # The len of the list of question is stored
+        # displays the initial question.
+        # When a question is answered, the answer is displayed.
+        # after the next question button is clicked, the counter
+        # ticks up and the next question is displayed
+
+        self.a_button.setEnabled(True)
+        self.b_button.setEnabled(True)
+        self.c_button.setEnabled(True)
+        self.d_button.setEnabled(True)
+
+        # Enables the quiz buttons
+
 class LatinMainWindow(QMainWindow):
 
     def __init__(self):
@@ -271,7 +362,7 @@ class LatinMainWindow(QMainWindow):
 
         questions = { 0: 25,
                       1: 50,
-                      2: -1}
+                      2: 1000}
 
         # These dicts hold the what each option below corresponds to
         # The difficulty is how many words will be chosen for questions
