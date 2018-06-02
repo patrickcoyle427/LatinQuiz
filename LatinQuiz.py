@@ -23,6 +23,10 @@ from PyQt5.QtCore import Qt
 
 # TODO:
 
+# Create next question button and what it does
+
+# Make question_answered work
+
 # Finish the layout of the game UI
 
 # Add a way to restart the game with your current settings
@@ -31,11 +35,31 @@ from PyQt5.QtCore import Qt
 
 # In the help or file menu, include way to see the source of the doc
 
+# Make the status bar display which question the player is on
+
+# Finish the 'About' menu
+
 class LatinQuiz(QWidget):
 
     def __init__(self):
 
         super().__init__()
+
+        self.show_next = False
+        # When self.show_next is true, the next question button is visible
+
+        self.question_counter = 0
+        # Controls which question is displayed.
+
+        self.current_question = None
+        # Holds the current question so it can be asked
+
+        self.total_correct_answers = 0
+        # Total number of correct answers the player has made
+
+        self.incorrect_answers = []
+        # Holds all the incorrect answers to help the user
+        # study the questions they got wrong.
 
         self.initUI()
 
@@ -48,9 +72,8 @@ class LatinQuiz(QWidget):
         self.setLayout(window_layout)
 
         self.word = QLabel('', self)
-        # self.word holds current question. It is set by ___ below
+        # self.word holds current question. It is set by quiz() below
         self.word.setAlignment(Qt.AlignCenter)
-        self.word.setStyleSheet('font-family: "Arial Black";')
                       
         window_layout.addWidget(self.word)
 
@@ -119,20 +142,7 @@ class LatinQuiz(QWidget):
         self.answer_group.setLayout(answer_group_layout)
 
         window_layout.addWidget(self.answer_group)
-
-    def question_answered(self):
-
-        # When a button is pressed, the question's answer is checked against
-        # what the user selected. The incorrect buttons become red and the
-        # correct answer turns green. Something alerts the user if they were
-        # correct or not
-
-        #TODO:
-
-        # Make this work
-
-        pass
-
+        
     def start_quiz(self, options):
 
         # Runs the functions related to starting the quiz,
@@ -247,6 +257,16 @@ class LatinQuiz(QWidget):
 
     def quiz(self, questions):
 
+        # questions is a tuple that contains tupes. Each tuple in questions
+        # contains 2 tuples arranged as:
+
+        # ((word, its definition), (answer1, answer2, answer3, answer4))
+        # one of the answers is == to the word's definition. These are
+        # chosen randomly build_questions.
+
+        # The question that is displayed is controlled by
+        # self.question_counter
+
         # Runs the quiz
 
         # TODO:
@@ -260,14 +280,80 @@ class LatinQuiz(QWidget):
         # displays the initial question.
         # When a question is answered, the answer is displayed.
         # after the next question button is clicked, the counter
-        # ticks up and the next question is displayed
+        # ticks up and the next question is displayed1
 
-        self.a_button.setEnabled(True)
-        self.b_button.setEnabled(True)
-        self.c_button.setEnabled(True)
-        self.d_button.setEnabled(True)
+        if self.question_counter < len(questions):
 
-        # Enables the quiz buttons
+            self.current_question = questions[self.question_counter][0]
+            # Sets the current question, used by the question label
+            # to display the word, and to check the player's answer
+
+            self.word.setText(self.current_question[0])
+
+            labels = questions[self.question_counter][1]
+            # labels holds the quesion answers, which is a tuple with 4 strings
+            # that contains the correct answer and 3 wrong ones.
+
+            self.a_label.setText(labels[0])
+            self.b_label.setText(labels[1])
+            self.c_label.setText(labels[2])
+            self.d_label.setText(labels[3])
+
+            self.a_button.setEnabled(True)
+            self.b_button.setEnabled(True)
+            self.c_button.setEnabled(True)
+            self.d_button.setEnabled(True)
+
+            # Enables the quiz buttons
+
+        else:
+
+            pass
+
+            # should display final score?
+
+    def question_answered(self):
+
+        # When a button is pressed, the question's answer is checked against
+        # what the user selected. The incorrect buttons become red and the
+        # correct answer turns green. Something alerts the user if they were
+        # correct or not
+
+        # TODO:
+
+        # Put a green border around the correct answser!
+        # Some other indicator to let the user know they are
+        # right or wrong.
+
+        sender = self.sender()
+        # gets the name of the object that sent the signal to
+        # question_answered, which are the buttons that the user
+        # pressed.
+
+        label_choice = {
+
+            self.a_button: self.a_label.text(),
+            self.b_button: self.b_label.text(),
+            self.c_button: self.c_label.text(),
+            self.d_button: self.d_label.text()
+
+            }
+
+        # the player's choice is used to get the text of the corresponding
+        # label, which holds the definition 
+
+        players_choice = label_choice[sender]
+
+        if players_choice == self.current_question[1]:
+        # self.current_question[1] is the definition of the word that
+        # is displayed
+
+            self.total_correct_answers += 1
+
+        else:
+
+            self.incorrect_answers.append(self.current_question)
+
 
 class LatinMainWindow(QMainWindow):
 
@@ -325,7 +411,7 @@ class LatinMainWindow(QMainWindow):
         self.previous_settings = []
         # Container for the last choosen settings, used for restarting a quiz
 
-        self.setGeometry(300, 300, 300, 400)
+        self.setGeometry(300, 300, 700, 400)
 
         self.setWindowTitle('Latin Quiz')
 
@@ -347,26 +433,20 @@ class LatinMainWindow(QMainWindow):
 
         ### Initial Setup ###
 
+        difficulty = (50, 100, 250, 500, 1000)
+
+        questions = (25, 50, 1000)
+        
+        # These tuples hold the what each option below corresponds to
+        # The difficulty is how many words will be chosen for questions
+        # the questions will be how many questions the quiz contains
+
         start_quiz_window = QDialog(None, Qt.WindowCloseButtonHint)
         # Qt.WindowCloseButtonHint Prevents the ? button from appearing
         # in the dialog window
 
         options_layout = QHBoxLayout()
         # Holds the radio button options for starting a game.
-
-        difficulty = { 0: 50,
-                       1: 100,
-                       2: 250,
-                       3: 500,
-                       4: 1000 }
-
-        questions = { 0: 25,
-                      1: 50,
-                      2: 1000}
-
-        # These dicts hold the what each option below corresponds to
-        # The difficulty is how many words will be chosen for questions
-        # the questions will be how many questions the quiz contains
 
         ### Difficulty Selection ###
 
@@ -491,13 +571,6 @@ class LatinMainWindow(QMainWindow):
             return
 
     def about(self):
-
-        # TODO:
-        
-        # Credits Dickinson College for their amazing
-        # .csv file that this is built on.
-
-        # plus a little credit screen for me.
 
         pass
 
