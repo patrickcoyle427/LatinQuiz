@@ -23,43 +23,40 @@ from PyQt5.QtCore import Qt
 
 # TODO:
 
-# Create next question button and what it does
-
-# Make question_answered work
-
 # Finish the layout of the game UI
 
 # Add a way to restart the game with your current settings
 
-# Record questions the user got wrong to help them study?
+# Give player the option to export questions they got wrong so they can study
 
 # In the help or file menu, include way to see the source of the doc
-
-# Make the status bar display which question the player is on
 
 # Finish the 'About' menu
 
 class LatinQuiz(QWidget):
 
-    def __init__(self):
+    questions = []
+    # Once the questions are created, they are held here for the class methods to use
+
+    question_counter = 0
+    # Controls which question is displayed.
+    
+    current_question = None
+    # Holds the current question being asked
+    
+    total_correct_answers = 0
+    # Total number of correct answers the player has made
+    
+    incorrect_answers = []
+    # Holds all the incorrect answers to help the user
+    # study the questions they got wrong.
+
+    def __init__(self, latin_window):
 
         super().__init__()
 
-        self.show_next = False
-        # When self.show_next is true, the next question button is visible
-
-        self.question_counter = 0
-        # Controls which question is displayed.
-
-        self.current_question = None
-        # Holds the current question so it can be asked
-
-        self.total_correct_answers = 0
-        # Total number of correct answers the player has made
-
-        self.incorrect_answers = []
-        # Holds all the incorrect answers to help the user
-        # study the questions they got wrong.
+        self.latin_window = latin_window
+        # Lets LatinQuiz update the status bar of LatinMainWindow
 
         self.initUI()
 
@@ -142,6 +139,20 @@ class LatinQuiz(QWidget):
         self.answer_group.setLayout(answer_group_layout)
 
         window_layout.addWidget(self.answer_group)
+
+        ### Next Button ###
+
+        next_button_layout = QHBoxLayout()
+
+        self.next_question_button = QPushButton('Next', self)
+        self.next_question_button.setMaximumWidth(100)
+        self.next_question_button.setEnabled(False)
+        self.next_question_button.clicked.connect(self.next_question)
+
+        next_button_layout.addWidget(self.next_question_button)
+
+        window_layout.addLayout(next_button_layout)
+
         
     def start_quiz(self, options):
 
@@ -161,7 +172,7 @@ class LatinQuiz(QWidget):
         possible_words = self.import_words(frequency)
         # returns a list of words used for the quiz
 
-        questions = self.build_questions(possible_words, q_number)
+        self.questions = self.build_questions(possible_words, q_number)
         # retuns a list containing tuples with the questions
         # and their possible answers.
 
@@ -170,7 +181,10 @@ class LatinQuiz(QWidget):
         # ((word, definition), (answer1, answer2, answer3, answer4))
         # one of the possible answers == definitiom
 
-        self.quiz(questions)
+        self.update_status_bar()
+        # Updates the main window's status bar with 
+
+        self.quiz()
 
     def import_words(self, frequency):
 
@@ -255,7 +269,7 @@ class LatinQuiz(QWidget):
 
         return questions
 
-    def quiz(self, questions):
+    def quiz(self):
 
         # questions is a tuple that contains tupes. Each tuple in questions
         # contains 2 tuples arranged as:
@@ -265,7 +279,7 @@ class LatinQuiz(QWidget):
         # chosen randomly build_questions.
 
         # The question that is displayed is controlled by
-        # self.question_counter
+        # question_counter
 
         # Runs the quiz
 
@@ -280,17 +294,19 @@ class LatinQuiz(QWidget):
         # displays the initial question.
         # When a question is answered, the answer is displayed.
         # after the next question button is clicked, the counter
-        # ticks up and the next question is displayed1
+        # ticks up and the next question is displayed.
 
-        if self.question_counter < len(questions):
+        self.next_question_button.setEnabled(False)
 
-            self.current_question = questions[self.question_counter][0]
+        if self.question_counter < len(self.questions):
+
+            self.current_question = self.questions[self.question_counter][0]
             # Sets the current question, used by the question label
             # to display the word, and to check the player's answer
 
             self.word.setText(self.current_question[0])
 
-            labels = questions[self.question_counter][1]
+            labels = self.questions[self.question_counter][1]
             # labels holds the quesion answers, which is a tuple with 4 strings
             # that contains the correct answer and 3 wrong ones.
 
@@ -303,6 +319,8 @@ class LatinQuiz(QWidget):
             self.b_button.setEnabled(True)
             self.c_button.setEnabled(True)
             self.d_button.setEnabled(True)
+
+            self.update_status_bar()
 
             # Enables the quiz buttons
 
@@ -325,6 +343,12 @@ class LatinQuiz(QWidget):
         # Some other indicator to let the user know they are
         # right or wrong.
 
+        self.a_button.setEnabled(False)
+        self.b_button.setEnabled(False)
+        self.c_button.setEnabled(False)
+        self.d_button.setEnabled(False)
+
+
         sender = self.sender()
         # gets the name of the object that sent the signal to
         # question_answered, which are the buttons that the user
@@ -340,7 +364,9 @@ class LatinQuiz(QWidget):
             }
 
         # the player's choice is used to get the text of the corresponding
-        # label, which holds the definition 
+        # label, which holds the definition
+
+        self.next_question_button.setEnabled(True)
 
         players_choice = label_choice[sender]
 
@@ -354,6 +380,22 @@ class LatinQuiz(QWidget):
 
             self.incorrect_answers.append(self.current_question)
 
+        self.update_status_bar()
+
+    def next_question(self):
+
+        self.question_counter += 1
+        self.quiz()
+
+    def update_status_bar(self):
+
+        # Updates the status bar of LatinMainWindow
+
+        self.latin_window.status_bar_message.setText(
+            'Question {}/{}, {} Correct Answers'.format(
+                self.question_counter + 1, len(self.questions), self.total_correct_answers))
+                
+
 
 class LatinMainWindow(QMainWindow):
 
@@ -361,8 +403,10 @@ class LatinMainWindow(QMainWindow):
 
         super().__init__()
 
-        self.Quiz = LatinQuiz()
+        self.Quiz = LatinQuiz(self)
         # Creates an instance of LatinQuiz()
+        # Passes the object instance to LatinQuiz so it can access
+        # objects in the main window.
 
         self.initUI()
 
