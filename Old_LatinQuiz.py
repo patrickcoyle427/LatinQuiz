@@ -1,4 +1,6 @@
 #!/bin/usr/python3
+# !!! THIS IS NO LONGER BEING UPDATED. ONLY HERE FOR REFERENCE IF NEEDED
+# PLEASE INSTEAD USE LatinQuizMainWindow
 
 """
 LatinQuiz.py - Game to help learn latin vocabulary.
