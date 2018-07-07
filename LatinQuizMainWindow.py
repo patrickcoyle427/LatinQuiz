@@ -11,6 +11,14 @@ LatinQuiz.py - Game to help learn latin vocabulary.
 
 """
 
+# TO DO:
+
+# Add a way to restart the game with your current settings
+
+# Finish the 'About' menu
+
+# Finish the 'How To Play' menu
+
 import sys, LatinQuizWidget
 
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QHBoxLayout,
@@ -86,6 +94,8 @@ class LatinMainWindow(QMainWindow):
 
     def start_new_quiz(self):
 
+        # Collects the options and starts the Latin quiz
+
         options = self.start_quiz_options()
 
         # Opens a window to adjust game settings
@@ -93,6 +103,8 @@ class LatinMainWindow(QMainWindow):
         if options != None:
 
             self.Quiz.start_quiz(options)
+
+            # Calls the start_quiz function from LatinQuizWidget
 
     def start_quiz_options(self):
 
@@ -239,11 +251,12 @@ class LatinMainWindow(QMainWindow):
 
     def about(self):
 
+        # Tells the user about where the csv file that this quiz pulls in
+        # is from along with a link to it and a little credit for myself too.
+
         pass
 
     def how_to_play(self):
-
-        #TODO:
 
         # Tells the user how to set the quiz up, the rules,
         # and what exactly this will do.

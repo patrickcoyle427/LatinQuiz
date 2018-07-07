@@ -1,37 +1,50 @@
 #!/bin/usr/python3
 
 """
-LatinQuiz.py - Game to help learn latin vocabulary.
-               Displays a word and 4 choices for answers.
-               Tracks the score of the user and shows how well they did
+LatinQuizWidget.py - The meat of LatinQuiz. Creates and displays questions,
+                     Keeps track of questions answers and controls what is
+                     shown in LatinQuizMainWindow.
 
-               Special thanks to Dickinson College for their
-               Latin Core Vocabulary list, available at:
-               http://dcc.dickinson.edu/latin-vocabulary-list
+                     This is imported into LatinQuizMain window and is not
+                     meant to be run by itself.
 
 """
 
+# TODO:
+
+# Add an error message to import_words if the file isn't found
+
+# Finish the layout of the game UI
+
+#   In questions_answered:
+#       Add some way to show which quesion is right and which is wrong,
+#       as well as some indication of which question the user chose.
+#       The idea so far is the correct answer will have a green border
+#       and should say correct answer as well for color blind people.
+#       if the incorrect answer is chosen that will have a red border and
+#       say wrong answer.
+#
+#       Use this to change the color of the border:
+#       yourWidget->setStyleSheet("border: 1px solid red")
+
+# QDialog in quiz to show your final score and give
+# player the option to export questions they got wrong
+# so they can study
+
+
+# Keyboard shortcuts for answering questions.
+# should be able to press A, B, C, D, or 1 2 3 4 for question answers
+# and enter to advance to the next question.
+
 import sys, random, os.path, csv
 
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QHBoxLayout,
-                             QVBoxLayout, QPushButton, QAction, QDialog,
-                             QLabel, QStatusBar, QWidget, QGroupBox,
+from PyQt5.QtWidgets import (QApplication, QHBoxLayout,
+                             QVBoxLayout, QPushButton, QDialog,
+                             QLabel, QWidget, QGroupBox,
                              QLineEdit, QRadioButton, QToolTip,
                              QButtonGroup)
 
 from PyQt5.QtCore import Qt
-
-# TODO:
-
-# Finish the layout of the game UI
-
-# Add a way to restart the game with your current settings
-
-# Give player the option to export questions they got wrong so they can study
-
-# In the help or file menu, include way to see the source of the doc
-
-# Finish the 'About' menu
 
 class LatinQuiz(QWidget):
 
@@ -164,11 +177,6 @@ class LatinQuiz(QWidget):
         # Loads the options into two variables that are used by
         # each of the functions below.
 
-        #TODO:
-
-        # Create another function that uses the questions
-        # to make the quiz functional.
-
         possible_words = self.import_words(frequency)
         # returns a list of words used for the quiz
 
@@ -288,19 +296,6 @@ class LatinQuiz(QWidget):
 
         # Runs the quiz
 
-        # TODO:
-
-        # Make this work
-
-        # How it should work:
-
-        # Counter keeps track of what quesion is loaded.
-        # The len of the list of question is stored
-        # displays the initial question.
-        # When a question is answered, the answer is displayed.
-        # after the next question button is clicked, the counter
-        # ticks up and the next question is displayed.
-
         self.next_question_button.setEnabled(False)
 
         if self.question_counter < len(self.questions):
@@ -384,6 +379,7 @@ class LatinQuiz(QWidget):
         else:
 
             self.incorrect_answers.append(self.current_question)
+            
 
         self.update_status_bar()
 
