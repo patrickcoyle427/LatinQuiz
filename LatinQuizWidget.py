@@ -29,8 +29,7 @@ LatinQuizWidget.py - The meat of LatinQuiz. Creates and displays questions,
 
 # QDialog in quiz to show your final score and give
 # player the option to export questions they got wrong
-# so they can study
-
+# so they can study. QUIZ NEEDS A WAY TO KNOW IT'S DONE!
 
 # Keyboard shortcuts for answering questions.
 # should be able to press A, B, C, D, or 1 2 3 4 for question answers
@@ -329,6 +328,7 @@ class LatinQuiz(QWidget):
             pass
 
             # should display final score?
+            # Change the text on the next button to end quiz?
 
     def question_answered(self):
 
@@ -336,12 +336,6 @@ class LatinQuiz(QWidget):
         # what the user selected. The incorrect buttons become red and the
         # correct answer turns green. Something alerts the user if they were
         # correct or not
-
-        # TODO:
-
-        # Put a green border around the correct answser!
-        # Some other indicator to let the user know they are
-        # right or wrong.
 
         self.a_button.setEnabled(False)
         self.b_button.setEnabled(False)
@@ -372,20 +366,37 @@ class LatinQuiz(QWidget):
 
         if players_choice == self.current_question[1]:
         # self.current_question[1] is the definition of the word that
-        # is displayed
+        # is displayed, and is stored as an object variable
 
             self.total_correct_answers += 1
 
         else:
 
             self.incorrect_answers.append(self.current_question)
-            
+
+        self.show_answers(self.current_question[1], players_choice)
+        # Changes the border around the correct and incorrect answers
 
         self.update_status_bar()
 
     def next_question(self):
 
+        # Sets up the next question, and removes the borders
+        # from correct/incorrect answers.
+
+        labels = (
+                self.a_label,
+                self.b_label,
+                self.c_label,
+                self.d_label
+            )
+
+        for label in labels:
+
+            label.setStyleSheet('')
+
         self.question_counter += 1
+        
         self.quiz()
 
     def update_status_bar(self):
@@ -395,6 +406,29 @@ class LatinQuiz(QWidget):
         self.latin_window.status_bar_message.setText(
             'Question {}/{}, {} Correct Answers'.format(
                 self.question_counter + 1, len(self.questions), self.total_correct_answers))
+
+    def show_answers(self, correct, players_choice):
+
+        # Places a green border around the correct answer, and if the user
+        # chose an incorrect answer, a red border is placed around it
+
+        labels = (
+                self.a_label,
+                self.b_label,
+                self.c_label,
+                self.d_label
+            )
+
+        for label in labels:
+
+            if label.text() == correct:
+
+                label.setStyleSheet('border: 3px solid green')
+
+            elif players_choice == label.text() and players_choice != correct:
+
+                label.setStyleSheet('border: 3px solid red')
+
                 
 if __name__ == '__main__':
 
