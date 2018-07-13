@@ -96,21 +96,25 @@ class LatinQuiz(QWidget):
 
         self.a_button = QPushButton('A', self)
         self.a_button.setMaximumWidth(50)
+        self.a_button.setShortcut('A')
         self.a_button.setEnabled(False)
         self.a_button.clicked.connect(self.question_answered)
         
         self.b_button = QPushButton('B', self)
         self.b_button.setMaximumWidth(50)
+        self.b_button.setShortcut('B')
         self.b_button.setEnabled(False)
         self.b_button.clicked.connect(self.question_answered)
         
         self.c_button = QPushButton('C', self)
         self.c_button.setMaximumWidth(50)
+        self.c_button.setShortcut('C')
         self.c_button.setEnabled(False)
         self.c_button.clicked.connect(self.question_answered)
         
         self.d_button = QPushButton('D', self)
         self.d_button.setMaximumWidth(50)
+        self.d_button.setShortcut('D')
         self.d_button.setEnabled(False)
         self.d_button.clicked.connect(self.question_answered)
 
@@ -158,13 +162,13 @@ class LatinQuiz(QWidget):
 
         self.next_question_button = QPushButton('Next', self)
         self.next_question_button.setMaximumWidth(100)
+        self.next_question_button.setShortcut('N')
         self.next_question_button.setEnabled(False)
         self.next_question_button.clicked.connect(self.next_question)
 
         next_button_layout.addWidget(self.next_question_button)
 
         window_layout.addLayout(next_button_layout)
-
         
     def start_quiz(self, options):
 
@@ -361,6 +365,7 @@ class LatinQuiz(QWidget):
         # label, which holds the definition
 
         self.next_question_button.setEnabled(True)
+        self.next_question_button.setFocus(True)
 
         players_choice = label_choice[sender]
 
