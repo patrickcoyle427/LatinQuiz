@@ -41,7 +41,7 @@ from PyQt5.QtWidgets import (QApplication, QHBoxLayout,
                              QVBoxLayout, QPushButton, QDialog,
                              QLabel, QWidget, QGroupBox,
                              QLineEdit, QRadioButton, QToolTip,
-                             QButtonGroup)
+                             QButtonGroup, QMessageBox)
 
 from PyQt5.QtCore import Qt
 
@@ -183,19 +183,21 @@ class LatinQuiz(QWidget):
         possible_words = self.import_words(frequency)
         # returns a list of words used for the quiz
 
-        self.questions = self.build_questions(possible_words, q_number)
-        # retuns a list containing tuples with the questions
-        # and their possible answers.
+        if possible_words != None:
 
-        # Tuples in questions are structured as:
+            self.questions = self.build_questions(possible_words, q_number)
+            # retuns a list containing tuples with the questions
+            # and their possible answers.
 
-        # ((word, definition), (answer1, answer2, answer3, answer4))
-        # one of the possible answers == definitiom
+            # Tuples in questions are structured as:
 
-        self.update_status_bar()
-        # Updates the main window's status bar with 
+            # ((word, definition), (answer1, answer2, answer3, answer4))
+            # one of the possible answers == definitiom
 
-        self.quiz()
+            self.update_status_bar()
+            # Updates the main window's status bar with 
+
+            self.quiz()
 
     def import_words(self, frequency):
 
@@ -227,10 +229,30 @@ class LatinQuiz(QWidget):
 
         else:
 
-            pass
-            #TODO:
+            self.import_words_error()
 
-            # Put an error message if file not found
+            return None
+
+    def import_words_error(self):
+
+        # Holds the error message which is displayed if no word file is found
+
+        words_not_found = QMessageBox()
+        #seticon not working. Come back to this
+        #words_not_found.setIcon(QMessageBox.Critical)
+
+        error_message = '''
+                        Word file not found! Please make sure a file named
+                        latin_vocabulary_list.csv is present in the same file
+                        as latinquiz.py
+                        '''
+        
+        words_not_found.setText(error_message)
+
+        words_not_found.setWindowTitle('Words Not Found')
+    
+        words_not_found.exec_()
+
 
     def build_questions(self, possible_words, q_number):
 
@@ -433,6 +455,14 @@ class LatinQuiz(QWidget):
             elif players_choice == label.text() and players_choice != correct:
 
                 label.setStyleSheet('border: 3px solid red')
+
+    def finish_quiz(self):
+
+        # At end of the quiz, this runs to let the user know it is finished,
+        # and to give them options to start again with the same or new options,
+        # export the words and definitions the user got wrong, and to show
+        # the user's final score.
+        pass
 
                 
 if __name__ == '__main__':
