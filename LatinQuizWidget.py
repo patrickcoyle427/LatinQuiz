@@ -16,6 +16,8 @@ LatinQuizWidget.py - The meat of LatinQuiz. Creates and displays questions,
 
 # Finish the layout of the game UI
 
+# look into https://stackoverflow.com/questions/40227047/python-pyqt5-how-to-show-an-error-message-with-pyqt5
+
 #   In questions_answered:
 #       Add some way to show which quesion is right and which is wrong,
 #       as well as some indication of which question the user chose.
