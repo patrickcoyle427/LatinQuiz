@@ -12,11 +12,7 @@ LatinQuizWidget.py - The meat of LatinQuiz. Creates and displays questions,
 
 # TODO:
 
-# Add an error message to import_words if the file isn't found
-
 # Finish the layout of the game UI
-
-# look into https://stackoverflow.com/questions/40227047/python-pyqt5-how-to-show-an-error-message-with-pyqt5
 
 #   In questions_answered:
 #       Add some way to show which quesion is right and which is wrong,
@@ -26,8 +22,6 @@ LatinQuizWidget.py - The meat of LatinQuiz. Creates and displays questions,
 #       if the incorrect answer is chosen that will have a red border and
 #       say wrong answer.
 #
-#       Use this to change the color of the border:
-#       yourWidget->setStyleSheet("border: 1px solid red")
 
 # QDialog in quiz to show your final score and give
 # player the option to export questions they got wrong
@@ -43,7 +37,7 @@ from PyQt5.QtWidgets import (QApplication, QHBoxLayout,
                              QVBoxLayout, QPushButton, QDialog,
                              QLabel, QWidget, QGroupBox,
                              QLineEdit, QRadioButton, QToolTip,
-                             QButtonGroup, QMessageBox)
+                             QButtonGroup, QMessageBox, QCheckBox)
 
 from PyQt5.QtCore import Qt
 
@@ -240,15 +234,16 @@ class LatinQuiz(QWidget):
         # Holds the error message which is displayed if no word file is found
 
         words_not_found = QMessageBox()
-        #seticon not working. Come back to this
-        #words_not_found.setIcon(QMessageBox.Critical)
+
+        words_not_found.setIcon(QMessageBox.Critical)
 
         error_message = '''
                         Word file not found! Please make sure a file named
                         latin_vocabulary_list.csv is present in the same file
                         as latinquiz.py
                         '''
-        
+    
+
         words_not_found.setText(error_message)
 
         words_not_found.setWindowTitle('Words Not Found')
@@ -353,7 +348,7 @@ class LatinQuiz(QWidget):
 
         else:
 
-            pass
+            self.finish_quiz()
 
             # should display final score?
             # Change the text on the next button to end quiz?
@@ -464,7 +459,106 @@ class LatinQuiz(QWidget):
         # and to give them options to start again with the same or new options,
         # export the words and definitions the user got wrong, and to show
         # the user's final score.
-        pass
+
+        # Export incorrect words should be a check box.
+
+        finish_quiz = QDialog(None, Qt.WindowCloseButtonHint)
+        # Qt.WindowCloseButtonHint Prevents the ? button from appearing
+        # in the dialog window
+        # Need to prevent the close button as well.
+
+        finish_quiz_layout = QVBoxLayout()
+
+        ### Final Score Display ###
+
+        num_grade = self.total_correct_answers / len(self.questions)
+
+        letter_grade = self.get_letter_grade(num_grade)
+
+        score_message = QLabel('Your final score is: {} / {} ({}%)'.format(self.total_correct_answers, len(self.questions), round(num_grade * 100, 2))
+        finish_quiz_layout.addWidget(score_message)
+                                                                    
+        letter_message = Qlabel('Your grade is', letter_grade)
+        finish_quiz_layout.addWidget(letter_message)
+
+        ### Export Scores Display ###
+
+        export_layout = QHBoxLayout()
+
+        export_label = QLabel('Export Incorrect Answers: ')
+        export_layout.addWidget(export_label)
+
+        
+        ### Misc Window Settings ###
+
+        finish_quiz.setGeometry(300, 500, 150, 150)
+
+        finish_quiz.setWindowTitle('Final Score')
+
+        finish_quiz.setLayout(finish_quiz_layout)
+
+        choice = final_score.exec_()
+        # Returns a number based on the user's choice.
+
+        if choice == 1:
+
+            pass
+
+    def get_letter_grade(self, num_grade):
+
+        letter_grade = ''
+
+        if num_grade > .92:
+
+            letter_grade = 'A+'
+
+        elif .89 < num_grade < .93:
+
+            letter_grade = 'A-'
+
+        elif .86 < num_grade < .9:
+
+            letter_grade = 'B+'
+
+        elif .82 < num_grade < .87:
+
+            letter_grade = 'B'
+
+        elif .79 < num_grade < .83:
+
+            letter_grade = 'B-'
+
+        elif .76 < num_grade < .8:
+
+            letter_grade = 'C+'
+
+        elif .72 < num_grade < .77:
+
+            letter_grade = 'C'
+
+        elif .69 < num_grade < .73:
+
+            letter_grade = 'C-'
+
+        elif .66 < num_grade < .7:
+
+            letter_grade = 'D+'
+
+        elif .64 < num_grade < .67:
+
+            letter_grade = 'D'
+
+        elif .59 < num_grade < .65:
+
+            letter_grade = 'D-'
+
+        else:
+
+            letter_grade = 'F'
+
+        return letter_grade
+
+        
 
                 
 if __name__ == '__main__':

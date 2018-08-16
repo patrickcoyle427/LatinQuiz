@@ -84,7 +84,7 @@ class LatinMainWindow(QMainWindow):
         # Makes LatinQuiz() the widget that the main window uses
 
         self.previous_settings = []
-        # Container for the last choosen settings, used for restarting a quiz
+        # Container for the last chosen settings, used for restarting a quiz
 
         self.setGeometry(300, 300, 700, 400)
 
