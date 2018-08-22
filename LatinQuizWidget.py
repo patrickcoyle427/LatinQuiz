@@ -475,19 +475,38 @@ class LatinQuiz(QWidget):
 
         letter_grade = self.get_letter_grade(num_grade)
 
-        score_message = QLabel('Your final score is: {} / {} ({}%)'.format(self.total_correct_answers, len(self.questions), round(num_grade * 100, 2))
+        score_message = 'Your final score is: {} / {} ({}%)'.format(
+            self.total_correct_answers, len(self.questions), round(num_grade * 100, 2))
+
+        score_display = QLabel(score_message)
+                               
         finish_quiz_layout.addWidget(score_message)
                                                                     
         letter_message = Qlabel('Your grade is', letter_grade)
         finish_quiz_layout.addWidget(letter_message)
 
-        ### Export Scores Display ###
+        export_check_box = QCheckBox('Export Incorrect Answers', self)
+        export_check_box.setChecked(True)
+        finish_quiz_layout.addWidget(export_check_box)
 
-        export_layout = QHBoxLayout()
+        ### Buttons ###
 
-        export_label = QLabel('Export Incorrect Answers: ')
-        export_layout.addWidget(export_label)
+        button_layout = QHBoxLayout()
 
+        restart_button = QPushButton('Restart This Quiz')
+        restart_button.clicked.connect()
+        # Connect this to something that restarts teh quiz
+
+        new_quiz_button = QPushButton('New Quiz')
+        new_quiz_button.clicked.connect(self.latin_window.start_new_quiz)
+        button_layout.addWidget(new_quiz_button)
+
+        close_button = QPushButton('Close')
+        close_button.clicked.connect(finish_quiz.reject)
+        
+        button_layout.addWidget(close_button)
+
+        # Look into qdialog.done(int) for this part
         
         ### Misc Window Settings ###
 
@@ -506,6 +525,8 @@ class LatinQuiz(QWidget):
 
     def get_letter_grade(self, num_grade):
 
+        # Emulates the letter grades given by West Chester University.
+        # Grades pulled from: http://catalog.wcupa.edu/undergraduate/academic-policies-procedures/grading-information/
         letter_grade = ''
 
         if num_grade > .92:
