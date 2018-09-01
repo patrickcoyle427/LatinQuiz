@@ -31,7 +31,7 @@ LatinQuizWidget.py - The meat of LatinQuiz. Creates and displays questions,
 # should be able to press A, B, C, D, or 1 2 3 4 for question answers
 # and enter to advance to the next question.
 
-import sys, random, os.path, csv
+import sys, random, os.path, csv, datetime
 
 from PyQt5.QtWidgets import (QApplication, QHBoxLayout,
                              QVBoxLayout, QPushButton, QDialog,
@@ -50,15 +50,19 @@ class LatinQuiz(QWidget):
     # Controls which question is displayed.
     
     current_question = None
-    # Holds the current question being asked
+    # Holds the current question being asked. These questions are tuples,
+    # with current_question[0] being the vocab word
+    # and current_question[1] being the definition of that word.
     
     total_correct_answers = 0
     # Total number of correct answers the player has made
     
     incorrect_answers = []
-    # Holds all the incorrect answers to help the user
-    # study the questions they got wrong.
-
+    # Holds all the incorrect answers to help the user study the questions they got wrong.
+    # All incorrect answers are from current_question, as such incorrect_answers
+    # stores tuples that follow the same format as current_question, with [0] being
+    # the word and [1] being the definition
+    
     def __init__(self, latin_window):
 
         super().__init__()
@@ -490,23 +494,30 @@ class LatinQuiz(QWidget):
         finish_quiz_layout.addWidget(export_check_box)
 
         ### Buttons ###
+        
+        # The following buttons use .done(int) instead of .accept or
+        # .reject.
+        # This is done for clarity, since I want these buttons to return
+        # 0, 1, and 2 respectively even though accept and reject will
+        # return 0 and 1.
 
         button_layout = QHBoxLayout()
 
         restart_button = QPushButton('Restart This Quiz')
-        restart_button.clicked.connect()
-        # Connect this to something that restarts teh quiz
+        restart_button.clicked.connect(finish_quiz.done(1))
+        # Connect this to something that restarts the quiz
 
         new_quiz_button = QPushButton('New Quiz')
-        new_quiz_button.clicked.connect(self.latin_window.start_new_quiz)
+        new_quiz_button.clicked.connect(finish_quiz.done(2))
         button_layout.addWidget(new_quiz_button)
 
         close_button = QPushButton('Close')
-        close_button.clicked.connect(finish_quiz.reject)
+        close_button.clicked.connect(finish_quiz.done(0))
         
         button_layout.addWidget(close_button)
 
-        # Look into qdialog.done(int) for this part
+        # Save for if statement later
+        # self.latin_window.start_new_quiz
         
         ### Misc Window Settings ###
 
@@ -519,7 +530,52 @@ class LatinQuiz(QWidget):
         choice = final_score.exec_()
         # Returns a number based on the user's choice.
 
+        if export_check_box.isChecked() == True:
+
+            # Exports the wrong answers to a text file
+            # to help the player study
+
+            today = 'wrong_latin_vocab_answers-' + str(datetime.date.today()) + '.txt'
+            # Creates the filename for the incorrect answers
+
+            with open(today, mode='a') as inc:
+
+                if os.path.getsize(today) > 0:
+
+                    inc.write('\n')
+                    # inserts a blank line into the output if the incorrect answers
+                    # file already has anything written in it.
+
+                for incorrect in incorrect_answers:
+
+                    # all items in incorrect_answers are stored as tuples
+                    # that need to be unpacked before writing
+
+                    inc.write(incorrect[0] + ' - ' + incorrect[1])
+
+        # The followin lines clear the held info from the previous quiz
+
+        del self.questions[:]
+
+        self.question_counter = 0
+
+        self.total_correct_answers = 0
+
+        del self.incorrect_answers[:]
+        
+        if choice == 0:
+
+            # Closes this dialog and does no action
+
+            return
+
         if choice == 1:
+
+            # Restarts the quiz with the current settings
+
+            pass
+
+        else:
 
             pass
 
@@ -527,6 +583,7 @@ class LatinQuiz(QWidget):
 
         # Emulates the letter grades given by West Chester University.
         # Grades pulled from: http://catalog.wcupa.edu/undergraduate/academic-policies-procedures/grading-information/
+
         letter_grade = ''
 
         if num_grade > .92:
