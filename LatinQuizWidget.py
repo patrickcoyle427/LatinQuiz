@@ -65,6 +65,10 @@ class LatinQuiz(QWidget):
     
     def __init__(self, latin_window):
 
+        # TODO: Make LatinQuiz inherit from LatinMainWindow
+
+        # latin_window
+
         super().__init__()
 
         self.latin_window = latin_window
@@ -171,6 +175,8 @@ class LatinQuiz(QWidget):
         window_layout.addLayout(next_button_layout)
         
     def start_quiz(self, options):
+
+        print('in start quiz')
 
         # Runs the functions related to starting the quiz,
         # This includes import_words and build_questions
@@ -484,15 +490,17 @@ class LatinQuiz(QWidget):
 
         score_display = QLabel(score_message)
                                
-        finish_quiz_layout.addWidget(score_message)
+        finish_quiz_layout.addWidget(score_display)
+
+        letter_message = 'Your grade is: {}'.format(letter_grade)
                                                                     
-        letter_message = Qlabel('Your grade is', letter_grade)
-        finish_quiz_layout.addWidget(letter_message)
+        letter_grade_display = QLabel(letter_message)
+        finish_quiz_layout.addWidget(letter_grade_display)
 
         export_check_box = QCheckBox('Export Incorrect Answers', self)
         export_check_box.setChecked(True)
         finish_quiz_layout.addWidget(export_check_box)
-
+ 
         ### Buttons ###
         
         # The following buttons use .done(int) instead of .accept or
@@ -501,44 +509,50 @@ class LatinQuiz(QWidget):
         # 0, 1, and 2 respectively even though accept and reject will
         # return 0 and 1.
 
+        # Option 0 does no action
+        # Option 1 restarts the quiz,
+        # Option 2 lets the user pick new options and starts the quiz again
+
         button_layout = QHBoxLayout()
 
         restart_button = QPushButton('Restart This Quiz')
-        restart_button.clicked.connect(finish_quiz.done(1))
-        # Connect this to something that restarts the quiz
+        restart_button.clicked.connect(lambda: finish_quiz.done(1))
+        button_layout.addWidget(restart_button)
+
+        # lambda used to pass a method with an argument to
+        # QPushButton.clicked.connect.
 
         new_quiz_button = QPushButton('New Quiz')
-        new_quiz_button.clicked.connect(finish_quiz.done(2))
+        new_quiz_button.clicked.connect(lambda: finish_quiz.done(2))
         button_layout.addWidget(new_quiz_button)
 
         close_button = QPushButton('Close')
-        close_button.clicked.connect(finish_quiz.done(0))
-        
+        close_button.clicked.connect(lambda: finish_quiz.done(0))
         button_layout.addWidget(close_button)
 
-        # Save for if statement later
-        # self.latin_window.start_new_quiz
+        finish_quiz_layout.addLayout(button_layout)
         
         ### Misc Window Settings ###
 
-        finish_quiz.setGeometry(300, 500, 150, 150)
+        finish_quiz.setGeometry(400, 400, 200, 200)
 
         finish_quiz.setWindowTitle('Final Score')
 
         finish_quiz.setLayout(finish_quiz_layout)
 
-        choice = final_score.exec_()
+        choice = finish_quiz.exec_()
         # Returns a number based on the user's choice.
+
+        print(choice)
 
         if export_check_box.isChecked() == True:
 
-            # Exports the wrong answers to a text file
-            # to help the player study
+            # Exports the wrong answers to a text file to help the plyer study
 
             today = 'wrong_latin_vocab_answers-' + str(datetime.date.today()) + '.txt'
             # Creates the filename for the incorrect answers
 
-            with open(today, mode='a') as inc:
+            with open(today, mode='a', encoding='utf-8') as inc:
 
                 if os.path.getsize(today) > 0:
 
@@ -546,22 +560,29 @@ class LatinQuiz(QWidget):
                     # inserts a blank line into the output if the incorrect answers
                     # file already has anything written in it.
 
-                for incorrect in incorrect_answers:
+                for incorrect in self.incorrect_answers:
 
                     # all items in incorrect_answers are stored as tuples
                     # that need to be unpacked before writing
 
-                    inc.write(incorrect[0] + ' - ' + incorrect[1])
+                    inc.write(incorrect[0] + ' - ' + incorrect[1] + '\n')
 
-        # The followin lines clear the held info from the previous quiz
+                total_wrong = len(self.questions) - self.total_correct_answers
 
-        del self.questions[:]
+                inc.write('Incorrect Answers: {}\n'.format(total_wrong))
+
+        print('loop finished')
+
+
+        # The following lines clear the held info from the previous quiz
+
+        # May not want to do this here?
+
+        self.incorrect_answers.clear()
 
         self.question_counter = 0
 
         self.total_correct_answers = 0
-
-        del self.incorrect_answers[:]
         
         if choice == 0:
 
@@ -571,13 +592,30 @@ class LatinQuiz(QWidget):
 
         if choice == 1:
 
-            # Restarts the quiz with the current settings
+            print('In choice 1, restart with same options')
 
-            pass
+            # Restarts the quiz with the same options
+
+            self.update_status_bar()
+
+            print('status bar update')
+
+            # TO DO: start quiz relies on options which are from
+            # the main window. Need to merge files before continuing
+
+            self.start_quiz()
 
         else:
 
-            pass
+            print('In choice 2, choose new options')
+
+           # del self.questions[:]
+
+            self.update_status_bar()
+
+            print('old wrong answers deleted')
+
+            self.latin_window.start_quiz_options()
 
     def get_letter_grade(self, num_grade):
 

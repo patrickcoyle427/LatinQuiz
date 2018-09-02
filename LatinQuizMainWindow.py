@@ -229,7 +229,7 @@ class LatinMainWindow(QMainWindow):
 
         ### Misc Window Settings ###
 
-        start_quiz_window.setGeometry(300, 300, 150, 150)
+        start_quiz_window.setGeometry(400, 400, 150, 150)
 
         start_quiz_window.setWindowTitle('Start New Quiz')
 
@@ -237,8 +237,6 @@ class LatinMainWindow(QMainWindow):
 
         choice = start_quiz_window.exec_()
         # Returns a number corresponding to the user's choice.
-        # 1 = Accept (Hit the ok button)
-        # 0 = Reject (Hit the cancel button)
 
         if choice == 1:
 
