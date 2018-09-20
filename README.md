@@ -1,38 +1,35 @@
 # LatinQuiz
 Game to help learn latin vocabulary
 
-# How to build:
+Quiz written in Python using PyQt5 and from a CSV of latin words and definitions 
+Obtained from Dickinson College at:
+http://dcc.dickinson.edu/latin-vocabulary-list
 
-Notes for myself, this will be removed once this is finished.
+# How to play
+First start a new game by selecting new game from the file
+menu or pressing CTRL + N.
+Then select your difficulty! The harder you select, the
+more infrequenly used the words being asked will be!
 
--Loads in the csv file from http://dcc.dickinson.edu/latin-vocabulary-list
+You can also chose the number of questions! 25, 50 or
+ALL! All questions may take awhile.
 
--Parses list and pulls in words + definitions.
+Your goal is to answer as many questions correctly
+as possible!
 
--Quizes the user
- -Lets you choose a # of questions.
- -Lets you choose a maximum frequency ranking (lower number = more common)
- -Should do definitions, but maybe could also quiz on parts of a sentence?
- -Displays a score and a letter grade at the end.
+You can click the buttons to chose your answers,
+or by pressing the letter on the button.
+You can also go to the next question by pressing the
+space bar.
 
-## Long-term additions
- -Saves results and graphs them to see your progress?
-  -User profiles?
+Once the quiz is complete you will be shown your score
+and the letter grade you would have received on a test.
+You can export the questions you got wrong to help you
+study!
 
+# Using LatinQuizExecutable
 
-File         Help
-- New Game   - 
+To use the LatinQuizExecutable, first download the entire folder.
+Navigate to the file named LatinQuiz, double click and enjoy!
 
-## Sample Layout 
-----------------------------
-| Word here in big letters |
-|			                     |	
-|    			                 |
-============================
-|			   |
-|    PA1	PA2	   |
-|    PA3	PA4 	   |
-|			   |
-----------------------------
-Status bar showing:
-Question 1/50 ect
+Executable created using Pyinstaller
