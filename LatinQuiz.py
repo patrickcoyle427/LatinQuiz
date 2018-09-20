@@ -23,12 +23,6 @@ from PyQt5.QtCore import Qt
 
 class LatinMainWindow(QMainWindow):
 
-# TO DO:
-
-# Finish the 'About' menu
-
-# Finish the 'How To Play' menu
-
     questions = []
     # Once the questions are created, they are held here for the class methods to use
 
