@@ -21,29 +21,45 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QHBoxLayout,
 
 from PyQt5.QtCore import Qt
 
-# TODO:
-
-# Make LatinQuiz class inherit from LatinMainWindow
-# Change any methods that need it to use this inheritance
-
 class LatinMainWindow(QMainWindow):
 
 # TO DO:
-
-# Add a way to restart the game with your current settings
 
 # Finish the 'About' menu
 
 # Finish the 'How To Play' menu
 
+    questions = []
+    # Once the questions are created, they are held here for the class methods to use
+
+    question_counter = 0
+    # Controls which question is displayed.
+    
+    current_question = None
+    # Holds the current question being asked. These questions are tuples,
+    # with current_question[0] being the vocab word
+    # and current_question[1] being the definition of that word.
+    
+    total_correct_answers = 0
+    # Total number of correct answers the player has made
+    
+    incorrect_answers = []
+    # Holds all the incorrect answers to help the user study the questions they got wrong.
+    # All incorrect answers are from current_question, as such incorrect_answers
+    # stores tuples that follow the same format as current_question, with [0] being
+    # the word and [1] being the definition
+
+    previous_options = None
+    # Holds the user's selected options for restarting the game
+
     def __init__(self):
 
         super().__init__()
 
-        self.Quiz = LatinQuizWidget.LatinQuiz(self)
-        # Creates an instance of LatinQuiz()
-        # Passes the object instance to LatinQuiz so it can access
-        # objects in the main window.
+        self.Quiz = LatinQuiz(self)
+        # Creates an instance of LatinQuiz(), the cental widget
+        # passes it the LatinMainWindow object reference to let the
+        # QWidget buttons interact with the main window methods.
 
         self.initUI()
 
@@ -58,12 +74,19 @@ class LatinMainWindow(QMainWindow):
         new_quiz = QAction('&New Quiz', self)
         new_quiz.setShortcut('Ctrl+N')
         new_quiz.triggered.connect(self.start_new_quiz)
+
+        self.restart = QAction('&Restart', self)
+        self.restart.setShortcut('Ctrl+r')
+        self.restart.triggered.connect(self.restart_quiz)
+        self.restart.setEnabled(False)
+        # enabled once self.previous options are not None
         
         exit_game = QAction('&Exit', self)
         exit_game.setShortcut('Ctrl+Q')
         exit_game.triggered.connect(self.close)
 
         file_menu.addAction(new_quiz)
+        file_menu.addAction(self.restart)
         file_menu.addAction(exit_game)
         
         help_menu = menubar.addMenu('&Help')
@@ -92,7 +115,7 @@ class LatinMainWindow(QMainWindow):
         self.previous_settings = []
         # Container for the last chosen settings, used for restarting a quiz
 
-        self.setGeometry(300, 300, 700, 400)
+        self.setGeometry(300, 300, 800, 400)
 
         self.setWindowTitle('Latin Quiz')
 
@@ -108,9 +131,11 @@ class LatinMainWindow(QMainWindow):
 
         if options != None:
 
-            self.Quiz.start_quiz(options)
+            self.previous_options = options[:]
 
-            # Calls the start_quiz function from LatinQuizWidget
+            self.restart.setEnabled(True)
+            
+            self.start_quiz(options)
 
     def start_quiz_options(self):
 
@@ -258,172 +283,73 @@ class LatinMainWindow(QMainWindow):
         # Tells the user about where the csv file that this quiz pulls in
         # is from along with a link to it and a little credit for myself too.
 
-        pass
+        about = QMessageBox()
+
+        message_text = '''
+        Software written by Patrick Coyle
+
+        LatinWord CSV file obtained from Dickinson College at:
+        http://dcc.dickinson.edu/latin-vocabulary-list
+
+        Letter grades are those used at West Chester University.
+        Obtained from:
+        http://catalog.wcupa.edu/undergraduate/academic-policies-procedures/
+        grading-information/
+
+        Thanks for playing :)
+        '''
+
+        about.setText(message_text)
+
+        about.setWindowTitle('About')
+
+        about.exec_()
 
     def how_to_play(self):
 
         # Tells the user how to set the quiz up, the rules,
         # and what exactly this will do.
 
-        pass
+        howto = QMessageBox()
 
-class LatinQuiz(QWidget, LatinMainWindow):
+        message_text = '''
+        First start a new game by selecting new game from the file
+        menu or pressing CTRL + N.
 
-# TODO:
+        Then select your difficulty! The harder you select, the
+        more infrequenly used the words being asked will be!
 
-# Finish the layout of the game UI
+        You can also chose the number of questions! 25, 50 or
+        ALL! All questions may take awhile.
 
-#   In questions_answered:
-#       Add some way to show which quesion is right and which is wrong,
-#       as well as some indication of which question the user chose.
-#       The idea so far is the correct answer will have a green border
-#       and should say correct answer as well for color blind people.
-#       if the incorrect answer is chosen that will have a red border and
-#       say wrong answer.
-#
+        Your goal is to answer as many questions correctly
+        as possible!
 
-# QDialog in quiz to show your final score and give
-# player the option to export questions they got wrong
-# so they can study. QUIZ NEEDS A WAY TO KNOW IT'S DONE!
+        You can click the buttons to chose your answers,
+        or by pressing the letter on the button.
 
-# Keyboard shortcuts for answering questions.
-# should be able to press A, B, C, D, or 1 2 3 4 for question answers
-# and enter to advance to the next question.
+        You can also go to the next question by pressing the
+        space bar.
 
-    questions = []
-    # Once the questions are created, they are held here for the class methods to use
+        Once the quiz is complete you will be shown your score
+        and the letter grade you would have received on a test.
+        You can export the questions you got wrong to help you
+        study!
 
-    question_counter = 0
-    # Controls which question is displayed.
-    
-    current_question = None
-    # Holds the current question being asked. These questions are tuples,
-    # with current_question[0] being the vocab word
-    # and current_question[1] being the definition of that word.
-    
-    total_correct_answers = 0
-    # Total number of correct answers the player has made
-    
-    incorrect_answers = []
-    # Holds all the incorrect answers to help the user study the questions they got wrong.
-    # All incorrect answers are from current_question, as such incorrect_answers
-    # stores tuples that follow the same format as current_question, with [0] being
-    # the word and [1] being the definition
-    
-    def __init__(self, latin_window):
+        Thanks for playing and happy studying! :)
+        '''
 
-        # TODO: Make LatinQuiz inherit from LatinMainWindow
+        howto.setText(message_text)
 
-        # latin_window
+        howto.setWindowTitle('How To Play')
 
-        super().__init__()
+        howto.exec_()
 
-        self.latin_window = latin_window
-        # Lets LatinQuiz update the status bar of LatinMainWindow
-
-        self.initUI()
-
-    def initUI(self):
-
-        ### Window Widget Layout ###
-
-        window_layout = QVBoxLayout()
-
-        self.setLayout(window_layout)
-
-        self.word = QLabel('', self)
-        # self.word holds current question. It is set by quiz() below
-        self.word.setAlignment(Qt.AlignCenter)
-                      
-        window_layout.addWidget(self.word)
-
-        self.answer_group = QGroupBox()
-        # Container for the answers
-
-        ### Buttons to Answer Questions ###
-
-        # Each button is enabled when the quiz is started. Their labels will
-        # have the possible answers the to displayed question.
-
-        self.a_button = QPushButton('A', self)
-        self.a_button.setMaximumWidth(50)
-        self.a_button.setShortcut('A')
-        self.a_button.setEnabled(False)
-        self.a_button.clicked.connect(self.question_answered)
-        
-        self.b_button = QPushButton('B', self)
-        self.b_button.setMaximumWidth(50)
-        self.b_button.setShortcut('B')
-        self.b_button.setEnabled(False)
-        self.b_button.clicked.connect(self.question_answered)
-        
-        self.c_button = QPushButton('C', self)
-        self.c_button.setMaximumWidth(50)
-        self.c_button.setShortcut('C')
-        self.c_button.setEnabled(False)
-        self.c_button.clicked.connect(self.question_answered)
-        
-        self.d_button = QPushButton('D', self)
-        self.d_button.setMaximumWidth(50)
-        self.d_button.setShortcut('D')
-        self.d_button.setEnabled(False)
-        self.d_button.clicked.connect(self.question_answered)
-
-        self.a_label = QLabel('', self)
-        self.a_label.setAlignment(Qt.AlignCenter)
-        
-        self.b_label = QLabel('', self)
-        self.b_label.setAlignment(Qt.AlignCenter)
-        
-        self.c_label = QLabel('', self)
-        self.c_label.setAlignment(Qt.AlignCenter)
-        
-        self.d_label = QLabel('', self)
-        self.d_label.setAlignment(Qt.AlignCenter)
-
-        a_layout = QHBoxLayout()
-        a_layout.addWidget(self.a_button)
-        a_layout.addWidget(self.a_label)
-
-        b_layout = QHBoxLayout()
-        b_layout.addWidget(self.b_button)
-        b_layout.addWidget(self.b_label)
-
-        c_layout = QHBoxLayout()
-        c_layout.addWidget(self.c_button)
-        c_layout.addWidget(self.c_label)
-
-        d_layout = QHBoxLayout()
-        d_layout.addWidget(self.d_button)
-        d_layout.addWidget(self.d_label)
-
-        answer_group_layout = QVBoxLayout()
-        answer_group_layout.addLayout(a_layout)
-        answer_group_layout.addLayout(b_layout)
-        answer_group_layout.addLayout(c_layout)
-        answer_group_layout.addLayout(d_layout)
-
-        self.answer_group.setLayout(answer_group_layout)
-
-        window_layout.addWidget(self.answer_group)
-
-        ### Next Button ###
-
-        next_button_layout = QHBoxLayout()
-
-        self.next_question_button = QPushButton('Next', self)
-        self.next_question_button.setMaximumWidth(100)
-        self.next_question_button.setShortcut('N')
-        self.next_question_button.setEnabled(False)
-        self.next_question_button.clicked.connect(self.next_question)
-
-        next_button_layout.addWidget(self.next_question_button)
-
-        window_layout.addLayout(next_button_layout)
-        
     def start_quiz(self, options):
 
-        print('in start quiz')
+        # options: a tuple, the first value is the frequency, a lower frequency means less
+        # common words are used in the quiz.
+        # The second value is the q_number aka number of questions the quiz will have
 
         # Runs the functions related to starting the quiz,
         # This includes import_words and build_questions
@@ -447,12 +373,14 @@ class LatinQuiz(QWidget, LatinMainWindow):
             # ((word, definition), (answer1, answer2, answer3, answer4))
             # one of the possible answers == definitiom
 
-            self.update_status_bar()
-            # Updates the main window's status bar with 
+            self.update_status_bar() 
 
             self.quiz()
 
     def import_words(self, frequency):
+
+        # frequency: an int containing the frequeny value. A lower frequency means less
+        # common words are used in the quiz.
 
         # Imports the csv file holding the words and returns a list
         # containing the words the quiz uses.
@@ -507,8 +435,10 @@ class LatinQuiz(QWidget, LatinMainWindow):
     
         words_not_found.exec_()
 
-
     def build_questions(self, possible_words, q_number):
+
+        # possible_words: a list containing words used in the quiz.
+        # q_number: an int, used to determine the number of questions
 
         # Creates and returns a list containing tuples of a word, its correct
         # answer and three random incorrect answers.
@@ -559,10 +489,6 @@ class LatinQuiz(QWidget, LatinMainWindow):
 
         # Resets the question counter to 0 when a new quiz starts
 
-        return questions
-
-    def quiz(self):
-
         # questions is a tuple that contains tupes. Each tuple in questions
         # contains 2 tuples arranged as:
 
@@ -570,12 +496,15 @@ class LatinQuiz(QWidget, LatinMainWindow):
         # one of the answers is == to the word's definition. These are
         # chosen randomly build_questions.
 
-        # The question that is displayed is controlled by
-        # question_counter
+        return questions
+
+    def quiz(self):
+
+        # The question that is displayed is controlled by question_counter
 
         # Runs the quiz
 
-        self.next_question_button.setEnabled(False)
+        self.Quiz.next_question_button.setEnabled(False)
 
         if self.question_counter < len(self.questions):
 
@@ -583,21 +512,29 @@ class LatinQuiz(QWidget, LatinMainWindow):
             # Sets the current question, used by the question label
             # to display the word, and to check the player's answer
 
-            self.word.setText(self.current_question[0])
+            build_style_sheet = 'font-weight:bold; font-size:{}px;'.format(
+                self.calculate_font_size(self.current_question[0]))
+    
+            # calculate_font_size sets the style sheet for the current question
+            # based on the lendth of the string.
+
+            self.Quiz.word.setStyleSheet(build_style_sheet)
+
+            self.Quiz.word.setText(self.current_question[0])
 
             labels = self.questions[self.question_counter][1]
             # labels holds the quesion answers, which is a tuple with 4 strings
             # that contains the correct answer and 3 wrong ones.
 
-            self.a_label.setText(labels[0])
-            self.b_label.setText(labels[1])
-            self.c_label.setText(labels[2])
-            self.d_label.setText(labels[3])
+            self.Quiz.a_label.setText(labels[0])
+            self.Quiz.b_label.setText(labels[1])
+            self.Quiz.c_label.setText(labels[2])
+            self.Quiz.d_label.setText(labels[3])
 
-            self.a_button.setEnabled(True)
-            self.b_button.setEnabled(True)
-            self.c_button.setEnabled(True)
-            self.d_button.setEnabled(True)
+            self.Quiz.a_button.setEnabled(True)
+            self.Quiz.b_button.setEnabled(True)
+            self.Quiz.c_button.setEnabled(True)
+            self.Quiz.d_button.setEnabled(True)
 
             self.update_status_bar()
 
@@ -607,9 +544,6 @@ class LatinQuiz(QWidget, LatinMainWindow):
 
             self.finish_quiz()
 
-            # should display final score?
-            # Change the text on the next button to end quiz?
-
     def question_answered(self):
 
         # When a button is pressed, the question's answer is checked against
@@ -617,11 +551,10 @@ class LatinQuiz(QWidget, LatinMainWindow):
         # correct answer turns green. Something alerts the user if they were
         # correct or not
 
-        self.a_button.setEnabled(False)
-        self.b_button.setEnabled(False)
-        self.c_button.setEnabled(False)
-        self.d_button.setEnabled(False)
-
+        self.Quiz.a_button.setEnabled(False)
+        self.Quiz.b_button.setEnabled(False)
+        self.Quiz.c_button.setEnabled(False)
+        self.Quiz.d_button.setEnabled(False)
 
         sender = self.sender()
         # gets the name of the object that sent the signal to
@@ -630,18 +563,18 @@ class LatinQuiz(QWidget, LatinMainWindow):
 
         label_choice = {
 
-            self.a_button: self.a_label.text(),
-            self.b_button: self.b_label.text(),
-            self.c_button: self.c_label.text(),
-            self.d_button: self.d_label.text()
+            self.Quiz.a_button: self.Quiz.a_label.text(),
+            self.Quiz.b_button: self.Quiz.b_label.text(),
+            self.Quiz.c_button: self.Quiz.c_label.text(),
+            self.Quiz.d_button: self.Quiz.d_label.text()
 
             }
 
         # the player's choice is used to get the text of the corresponding
         # label, which holds the definition
 
-        self.next_question_button.setEnabled(True)
-        self.next_question_button.setFocus(True)
+        self.Quiz.next_question_button.setEnabled(True)
+        self.Quiz.next_question_button.setFocus(True)
 
         players_choice = label_choice[sender]
 
@@ -666,10 +599,10 @@ class LatinQuiz(QWidget, LatinMainWindow):
         # from correct/incorrect answers.
 
         labels = (
-                self.a_label,
-                self.b_label,
-                self.c_label,
-                self.d_label
+                self.Quiz.a_label,
+                self.Quiz.b_label,
+                self.Quiz.c_label,
+                self.Quiz.d_label
             )
 
         for label in labels:
@@ -682,9 +615,9 @@ class LatinQuiz(QWidget, LatinMainWindow):
 
     def update_status_bar(self):
 
-        # Updates the status bar of LatinMainWindow
+        # Updates the status bar for the current question.
 
-        self.latin_window.status_bar_message.setText(
+        self.status_bar_message.setText(
             'Question {}/{}, {} Correct Answers'.format(
                 self.question_counter + 1, len(self.questions), self.total_correct_answers))
 
@@ -694,21 +627,21 @@ class LatinQuiz(QWidget, LatinMainWindow):
         # chose an incorrect answer, a red border is placed around it
 
         labels = (
-                self.a_label,
-                self.b_label,
-                self.c_label,
-                self.d_label
+                self.Quiz.a_label,
+                self.Quiz.b_label,
+                self.Quiz.c_label,
+                self.Quiz.d_label
             )
 
         for label in labels:
 
             if label.text() == correct:
 
-                label.setStyleSheet('border: 3px solid green')
+                label.setStyleSheet('border: 3px solid green; font-weight:bold;')
 
             elif players_choice == label.text() and players_choice != correct:
 
-                label.setStyleSheet('border: 3px solid red')
+                label.setStyleSheet('border: 3px solid red; font-weight:bold;')
 
     def finish_quiz(self):
 
@@ -722,9 +655,9 @@ class LatinQuiz(QWidget, LatinMainWindow):
         finish_quiz = QDialog(None, Qt.WindowCloseButtonHint)
         # Qt.WindowCloseButtonHint Prevents the ? button from appearing
         # in the dialog window
-        # Need to prevent the close button as well.
 
         finish_quiz_layout = QVBoxLayout()
+        finish_quiz_layout.setAlignment(Qt.AlignCenter)
 
         ### Final Score Display ###
 
@@ -736,15 +669,21 @@ class LatinQuiz(QWidget, LatinMainWindow):
             self.total_correct_answers, len(self.questions), round(num_grade * 100, 2))
 
         score_display = QLabel(score_message)
+        score_display.setAlignment(Qt.AlignCenter)
+        score_display.setStyleSheet('font-size:18px;')
                                
         finish_quiz_layout.addWidget(score_display)
 
         letter_message = 'Your grade is: {}'.format(letter_grade)
                                                                     
         letter_grade_display = QLabel(letter_message)
+        letter_grade_display.setStyleSheet('font-size:18px;')
+        letter_grade_display.setAlignment(Qt.AlignCenter)
+        
         finish_quiz_layout.addWidget(letter_grade_display)
 
         export_check_box = QCheckBox('Export Incorrect Answers', self)
+        export_check_box.setStyleSheet('margin-left:50%; margin-right:50%;')
         export_check_box.setChecked(True)
         finish_quiz_layout.addWidget(export_check_box)
  
@@ -767,7 +706,7 @@ class LatinQuiz(QWidget, LatinMainWindow):
         button_layout.addWidget(restart_button)
 
         # lambda used to pass a method with an argument to
-        # QPushButton.clicked.connect.
+        # QPushButton.clicked.connect
 
         new_quiz_button = QPushButton('New Quiz')
         new_quiz_button.clicked.connect(lambda: finish_quiz.done(2))
@@ -781,7 +720,7 @@ class LatinQuiz(QWidget, LatinMainWindow):
         
         ### Misc Window Settings ###
 
-        finish_quiz.setGeometry(400, 400, 200, 200)
+        finish_quiz.setGeometry(400, 400, 200, 150)
 
         finish_quiz.setWindowTitle('Final Score')
 
@@ -789,8 +728,6 @@ class LatinQuiz(QWidget, LatinMainWindow):
 
         choice = finish_quiz.exec_()
         # Returns a number based on the user's choice.
-
-        print(choice)
 
         if export_check_box.isChecked() == True:
 
@@ -818,13 +755,8 @@ class LatinQuiz(QWidget, LatinMainWindow):
 
                 inc.write('Incorrect Answers: {}\n'.format(total_wrong))
 
-        print('loop finished')
-
-
         # The following lines clear the held info from the previous quiz
-
-        # May not want to do this here?
-
+        
         self.incorrect_answers.clear()
 
         self.question_counter = 0
@@ -839,35 +771,32 @@ class LatinQuiz(QWidget, LatinMainWindow):
 
         if choice == 1:
 
-            print('In choice 1, restart with same options')
-
             # Restarts the quiz with the same options
 
             self.update_status_bar()
 
-            print('status bar update')
-
-            # TO DO: start quiz relies on options which are from
-            # the main window. Need to merge files before continuing
-
-            self.start_quiz()
+            self.restart_quiz()
 
         else:
 
-            print('In choice 2, choose new options')
-
-           # del self.questions[:]
+            # restarts the quiz with the new option dialog
 
             self.update_status_bar()
 
-            print('old wrong answers deleted')
+            self.start_new_quiz()
 
-            self.latin_window.start_quiz_options()
+    def restart_quiz(self):
+
+        # restarts the quiz with the last used options. Used by the restart quiz menu
+        # option and the restart quiz option at the end of the quiz.
+
+        self.start_quiz(self.previous_options)
 
     def get_letter_grade(self, num_grade):
 
         # Emulates the letter grades given by West Chester University.
-        # Grades pulled from: http://catalog.wcupa.edu/undergraduate/academic-policies-procedures/grading-information/
+        # Grades pulled from:
+        # http://catalog.wcupa.edu/undergraduate/academic-policies-procedures/grading-information/
 
         letter_grade = ''
 
@@ -920,7 +849,139 @@ class LatinQuiz(QWidget, LatinMainWindow):
             letter_grade = 'F'
 
         return letter_grade
-    
+
+    def calculate_font_size(self, current_q):
+
+        lencq = len(current_q)
+
+        # current_q is a string. It is the current question being asked.
+
+        # takes the len of current_q and uses that to determine the size of
+        # the font for the displayed question
+
+        if lencq < 21:
+
+            return '50'
+
+        elif 21 < lencq < 41:
+
+            return '25'
+
+        else:
+
+            return '18'
+
+class LatinQuiz(QWidget):
+
+    def __init__(self, main_window):
+
+        # main_window is a reference to LatinMainWindow, allowing the widget
+        # to interact with certain methods of the main window.
+
+        super().__init__()
+
+        self.main_window = main_window
+
+        self.initUI()
+
+    def initUI(self):
+
+        ### Window Widget Layout ###
+
+        window_layout = QVBoxLayout()
+
+        self.setLayout(window_layout)
+
+        self.word = QLabel('', self)
+        # self.word holds current question. It is set by LatinMainWindow.quiz()
+        self.word.setAlignment(Qt.AlignCenter)
+                      
+        window_layout.addWidget(self.word)
+
+        self.answer_group = QGroupBox()
+        # Container for the answers
+
+        ### Buttons to Answer Questions ###
+
+        # Each button is enabled when the quiz is started. Their labels will
+        # have the possible answers the to displayed question.
+
+        self.a_button = QPushButton('A', self)
+        self.a_button.setMaximumWidth(50)
+        self.a_button.setShortcut('A')
+        self.a_button.setEnabled(False)
+        self.a_button.clicked.connect(self.main_window.question_answered)
+        
+        self.b_button = QPushButton('B', self)
+        self.b_button.setMaximumWidth(50)
+        self.b_button.setShortcut('B')
+        self.b_button.setEnabled(False)
+        self.b_button.clicked.connect(self.main_window.question_answered)
+        
+        self.c_button = QPushButton('C', self)
+        self.c_button.setMaximumWidth(50)
+        self.c_button.setShortcut('C')
+        self.c_button.setEnabled(False)
+        self.c_button.clicked.connect(self.main_window.question_answered)
+        
+        self.d_button = QPushButton('D', self)
+        self.d_button.setMaximumWidth(50)
+        self.d_button.setShortcut('D')
+        self.d_button.setEnabled(False)
+        self.d_button.clicked.connect(self.main_window.question_answered)
+
+        self.a_label = QLabel('', self)
+        self.a_label.setAlignment(Qt.AlignCenter)
+        
+        self.b_label = QLabel('', self)
+        self.b_label.setAlignment(Qt.AlignCenter)
+        
+        self.c_label = QLabel('', self)
+        self.c_label.setAlignment(Qt.AlignCenter)
+        
+        self.d_label = QLabel('', self)
+        self.d_label.setAlignment(Qt.AlignCenter)
+
+        a_layout = QHBoxLayout()
+        a_layout.addWidget(self.a_button)
+        a_layout.addWidget(self.a_label)
+
+        b_layout = QHBoxLayout()
+        b_layout.addWidget(self.b_button)
+        b_layout.addWidget(self.b_label)
+
+        c_layout = QHBoxLayout()
+        c_layout.addWidget(self.c_button)
+        c_layout.addWidget(self.c_label)
+
+        d_layout = QHBoxLayout()
+        d_layout.addWidget(self.d_button)
+        d_layout.addWidget(self.d_label)
+
+        answer_group_layout = QVBoxLayout()
+        answer_group_layout.addLayout(a_layout)
+        answer_group_layout.addLayout(b_layout)
+        answer_group_layout.addLayout(c_layout)
+        answer_group_layout.addLayout(d_layout)
+
+        self.answer_group.setLayout(answer_group_layout)
+
+        window_layout.addWidget(self.answer_group)
+
+        ### Next Button ###
+
+        next_button_layout = QHBoxLayout()
+
+        self.next_question_button = QPushButton('Next', self)
+        self.next_question_button.setMaximumWidth(100)
+        self.next_question_button.setShortcut('N')
+        self.next_question_button.setEnabled(False)
+        self.next_question_button.clicked.connect(self.main_window.next_question)
+
+        next_button_layout.addWidget(self.next_question_button)
+
+        window_layout.addLayout(next_button_layout)
+        
         
 if __name__ == '__main__':
 
